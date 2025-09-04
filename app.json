@@ -33,6 +33,19 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Cette application a besoin d'accéder à votre position pour enregistrer la localisation des obstacles."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cette application a besoin d'accéder à vos photos pour ajouter des images aux obstacles.",
+          "cameraPermission": "Cette application a besoin d'accéder à votre caméra pour prendre des photos des obstacles."
+        }
       ]
     ],
     "experiments": {
