@@ -1,6 +1,6 @@
+import LocationPicker from "@/components/LocationPicker";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { LocationService } from "@/services/locationService";
 import { StorageService } from "@/services/storageService";
 import { Obstacle } from "@/types";
 import * as ImagePicker from "expo-image-picker";
@@ -23,10 +23,9 @@ export default function AddObstacleScreen() {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
   const [photo, setPhoto] = useState<string | null>(null);
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [latitude, setLatitude] = useState<number | undefined>();
+  const [longitude, setLongitude] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -106,25 +105,11 @@ export default function AddObstacleScreen() {
   };
 
   /**
-   * Get current location
+   * Handle location change from LocationPicker
    */
-  const getCurrentLocation = async () => {
-    setIsGettingLocation(true);
-    try {
-      const location = await LocationService.getCurrentLocation();
-      if (location) {
-        setLatitude(location.latitude.toString());
-        setLongitude(location.longitude.toString());
-        Alert.alert("Succès", "Position actuelle récupérée");
-      } else {
-        Alert.alert("Erreur", "Impossible de récupérer la position actuelle");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération de la position:", error);
-      Alert.alert("Erreur", "Impossible de récupérer la position actuelle");
-    } finally {
-      setIsGettingLocation(false);
-    }
+  const handleLocationChange = (lat: number | undefined, lng: number | undefined) => {
+    setLatitude(lat);
+    setLongitude(lng);
   };
 
   /**
@@ -149,8 +134,8 @@ export default function AddObstacleScreen() {
         titre: titre.trim(),
         description: description.trim(),
         photo: photo || undefined,
-        latitude: latitude ? parseFloat(latitude) : undefined,
-        longitude: longitude ? parseFloat(longitude) : undefined,
+        latitude: latitude,
+        longitude: longitude,
         dateCreation: new Date().toISOString(),
       };
 
@@ -253,73 +238,11 @@ export default function AddObstacleScreen() {
             <Text style={[styles.label, { color: colors.text }]}>
               Position géographique
             </Text>
-            <View style={styles.locationContainer}>
-              <View style={styles.coordinatesRow}>
-                <View style={styles.coordinateInput}>
-                  <Text
-                    style={[
-                      styles.coordinateLabel,
-                      { color: colors.tabIconDefault },
-                    ]}
-                  >
-                    Latitude
-                  </Text>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.background,
-                        borderColor: "#e0e0e0",
-                        color: colors.text,
-                      },
-                    ]}
-                    value={latitude}
-                    onChangeText={setLatitude}
-                    placeholder="Ex: 49.1193089"
-                    placeholderTextColor={colors.tabIconDefault}
-                    keyboardType="numeric"
-                  />
-                </View>
-                <View style={styles.coordinateInput}>
-                  <Text
-                    style={[
-                      styles.coordinateLabel,
-                      { color: colors.tabIconDefault },
-                    ]}
-                  >
-                    Longitude
-                  </Text>
-                  <TextInput
-                    style={[
-                      styles.input,
-                      {
-                        backgroundColor: colors.background,
-                        borderColor: "#e0e0e0",
-                        color: colors.text,
-                      },
-                    ]}
-                    value={longitude}
-                    onChangeText={setLongitude}
-                    placeholder="Ex: 6.1757156"
-                    placeholderTextColor={colors.tabIconDefault}
-                    keyboardType="numeric"
-                  />
-                </View>
-              </View>
-              <TouchableOpacity
-                style={[
-                  styles.locationButton
-                ]}
-                onPress={getCurrentLocation}
-                disabled={isGettingLocation}
-              >
-                <Text style={styles.locationButtonText}>
-                  {isGettingLocation
-                    ? "📍 Récupération..."
-                    : "📍 Position actuelle"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <LocationPicker
+              latitude={latitude}
+              longitude={longitude}
+              onLocationChange={handleLocationChange}
+            />
           </View>
         </View>
       </ScrollView>
@@ -422,36 +345,6 @@ const styles = StyleSheet.create({
   photoButtonText: {
     fontSize: 16,
     color: "white",
-  },
-  locationContainer: {
-    gap: 12,
-  },
-  coordinatesRow: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  coordinateInput: {
-    flex: 1,
-  },
-  coordinateLabel: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  locationButton: {
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: "#007AFF",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  locationButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
   },
   buttonContainer: {
     flexDirection: "row",
